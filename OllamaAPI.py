@@ -3,13 +3,13 @@ Fichier contenant les fonctions d'appel pour l'API d'ollama.
 Il faut d'abord run Ollama dans le terminal Windows : ollama run mistral
 '''
 
-from Libraries import *
+from Settings import *
 
-def ask_ollama(prompt, model="mistral:7b"):
-    url = "http://localhost:11434/api/chat"
+def ask_ollama(prompt):
+    url = Settings.api_url
     payload = {
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
+        "model": Settings.model,
+        "messages": prompt,
         "stream": False
     }
 

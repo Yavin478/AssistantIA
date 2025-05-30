@@ -2,7 +2,6 @@
 Fichier principale du programme
 '''
 
-
 from UI import *
 
 if __name__=='__main__':
