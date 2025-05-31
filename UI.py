@@ -18,37 +18,44 @@ class AssistantWindow(QWidget):
             }
         ]
 
-        # Initialisation du fichier de sauvegarde des conversations
+        # Initialisation du fichier de sauvegarde des conversations.
         self.history_file = Settings.history_file
 
-        # Réinitialiser le fichier à chaque lancement (sans rien écrire)
+        # Réinitialiser le fichier à chaque lancement (sans rien écrire).
         with open(self.history_file, "w", encoding="utf-8"):
             pass
 
-        # Layout principal de l'interface
+        # Layout principal de l'interface.
         main_layout = QVBoxLayout(self)
 
-        # Affichage du modèle utilisé
-        model_label = QLabel(f"Modèle utilisé : {Settings.model}")
-        model_label.setStyleSheet("font-weight: bold; font-size: 14px;")
-        main_layout.addWidget(model_label)
+        # Sélection et affichage du modèle utilisé via une liste déroulante.
+        model_layout = QHBoxLayout()
+        model_label = QLabel("Modèle utilisé :")
+        self.model_selector = QComboBox()
+        self.model_selector.addItems(Settings.available_models)
+        self.model_selector.setCurrentText(Settings.model)
+        self.model_selector.currentTextChanged.connect(self.update_model)
 
-        # Zone d'affichage de l'historique de conversation
+        model_layout.addWidget(model_label)
+        model_layout.addWidget(self.model_selector)
+        main_layout.addLayout(model_layout)
+
+        # Zone d'affichage de l'historique de conversation.
         self.history_display = QTextEdit()
         self.history_display.setReadOnly(True)
         self.history_display.setStyleSheet("font: 12pt 'Courier';")
         main_layout.addWidget(self.history_display, stretch=5)
 
-        # Zone de saisie
+        # Zone de saisie de la requête.
         self.prompt_input = QTextEdit()
         self.prompt_input.setPlaceholderText("Écris ta question ici...")
         self.prompt_input.setFixedHeight(80)
         main_layout.addWidget(self.prompt_input, stretch=1)
 
-        # Intéraction vocale
+        # Intéraction vocale.
         self.recorder = AudioRecorder(self.handle_transcription)
 
-        # Boutons (micro + envoyer)
+        # Boutons (micro + envoyer).
         button_layout = QHBoxLayout()
         self.mic_button = QPushButton()
         self.mic_button.setIcon(qta.icon("fa5s.microphone"))
@@ -63,8 +70,6 @@ class AssistantWindow(QWidget):
         button_layout.addWidget(self.ask_button)
         main_layout.addLayout(button_layout)
 
-        # self.setLayout(main_layout)
-
 
     # Méthode permettant d'envoyer un prompt à l'API Ollama et d'afficher la réponse obtenue sur l'interface graphique.
     def send_prompt(self):
@@ -75,11 +80,11 @@ class AssistantWindow(QWidget):
         self.append_message("🧑 Utilisateur", prompt)
         self.prompt_input.clear()
 
-        # Stocker dans l'historique
+        # Stocker dans l'historique.
         self.conversation_history.append({"role": "user", "content": prompt})
         self.save_to_file(str({"role": "user", "content": prompt}))
 
-        # Requête et réponse de l'API Ollama
+        # Requête et réponse de l'API Ollama.
         try:
             response = OllamaAPI.ask_ollama(self.conversation_history)
             self.append_message("🤖 Assistant IA", response)
@@ -99,7 +104,7 @@ class AssistantWindow(QWidget):
         with open(self.history_file, "a", encoding="utf-8") as f:
             f.write(message + "\n")
 
-    # Méthodes pour recueillir l'audio et le transcrire
+    # Méthodes pour recueillir l'audio et le transcrire.
     def toggle_recording(self):
         if not self.recorder.is_recording:
             self.recorder.start_recording()
@@ -109,7 +114,12 @@ class AssistantWindow(QWidget):
             self.mic_button.setIcon(qta.icon("fa5s.microphone"))
 
     def handle_transcription(self, text):
-        # Affiche la transcription dans le champ de saisie
+        # Affiche la transcription dans le champ de saisie.
         self.prompt_input.setText(text)
-        # Envoie le message automatiquement
+        # Envoie le message automatiquement.
         self.send_prompt()
+
+    # Méthode pour mettre à jour dynamiquement le modèle utilisé.
+    def update_model(self, model_name):
+        Settings.model = model_name
+

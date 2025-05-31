@@ -7,9 +7,15 @@ from Libraries import *
 # Classe contenant les paramètres configurables du projet.
 @dataclass
 class Settings:
-    # Attributs pour l'usage du LLM avec Ollama
-    model: str = "mistral:7b"
+    # Attributs pour l'usage du LLM avec Ollama.
+
+    # Liste des modèles disponibles, téléchargés au préalable avec Ollama.
+    available_models = ["mistral:7b", "tinyllama:1.1b-chat-v1-q4_0"]
+    # Modèle par défaut.
+    model: str = available_models[0]
+    # Url de l'API Ollama.
     api_url: str = "http://localhost:11434/api/chat"
+    # Prompt système envoyé au LLM.
     system_prompt: str = (
         "Tu es Ignis, un assistant IA francophone utile, honnête et concis. "
         "Tu dois toujours répondre clairement à la question posée en français, sans imaginer de contexte fictif. "
