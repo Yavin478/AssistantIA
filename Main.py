@@ -1,5 +1,5 @@
 ''' Auteur : Yavin 4u78 (avec chatGPT)
-Fichier principale du programme
+Fichier principale du programme.
 '''
 
 from UI import *

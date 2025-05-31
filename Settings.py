@@ -1,5 +1,5 @@
 ''' Auteur : Yavin 4u78 (avec chatGPT)
-Fichier de configuration des paramètres variables du projet
+Fichier de configuration des paramètres variables du projet.
 '''
 
 from Libraries import *
@@ -11,7 +11,7 @@ class Settings:
     model: str = "mistral:7b"
     api_url: str = "http://localhost:11434/api/chat"
     system_prompt: str = (
-        "Tu es un assistant IA francophone utile, honnête et concis. "
+        "Tu es Ignis, un assistant IA francophone utile, honnête et concis. "
         "Tu dois toujours répondre clairement à la question posée en français, sans imaginer de contexte fictif. "
         "Si tu ne sais pas, dis-le franchement."
         "Tu ne dois surtout pas halluciner"

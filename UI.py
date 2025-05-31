@@ -1,9 +1,10 @@
 ''' Auteur : Yavin 4u78 (avec chatGPT)
-Fichier contenant les classes pour le GUI
+Fichier contenant la classe pour le GUI.
 '''
 
-from OllamaAPI import *
+from Vocal import *
 
+# Classe pour l'affichage de l'interface graphique avec les boutons associés aux diverses fonctionnalités.
 class AssistantWindow(QWidget):
     def __init__(self):
         super().__init__()
@@ -32,7 +33,7 @@ class AssistantWindow(QWidget):
         model_label.setStyleSheet("font-weight: bold; font-size: 14px;")
         main_layout.addWidget(model_label)
 
-        # Historique de conversation (affichage)
+        # Zone d'affichage de l'historique de conversation
         self.history_display = QTextEdit()
         self.history_display.setReadOnly(True)
         self.history_display.setStyleSheet("font: 12pt 'Courier';")
@@ -44,15 +45,26 @@ class AssistantWindow(QWidget):
         self.prompt_input.setFixedHeight(80)
         main_layout.addWidget(self.prompt_input, stretch=1)
 
-        # Bouton
+        # Intéraction vocale
+        self.recorder = AudioRecorder(self.handle_transcription)
+
+        # Boutons (micro + envoyer)
         button_layout = QHBoxLayout()
+        self.mic_button = QPushButton()
+        self.mic_button.setIcon(qta.icon("fa5s.microphone"))
+        self.mic_button.setFixedSize(40, 40)
+        self.mic_button.clicked.connect(self.toggle_recording)
+
         self.ask_button = QPushButton("Envoyer")
         self.ask_button.clicked.connect(self.send_prompt)
+
+        button_layout.addWidget(self.mic_button)
         button_layout.addStretch()
         button_layout.addWidget(self.ask_button)
         main_layout.addLayout(button_layout)
 
-        self.setLayout(main_layout)
+        # self.setLayout(main_layout)
+
 
     # Méthode permettant d'envoyer un prompt à l'API Ollama et d'afficher la réponse obtenue sur l'interface graphique.
     def send_prompt(self):
@@ -69,7 +81,7 @@ class AssistantWindow(QWidget):
 
         # Requête et réponse de l'API Ollama
         try:
-            response = ask_ollama(self.conversation_history)
+            response = OllamaAPI.ask_ollama(self.conversation_history)
             self.append_message("🤖 Assistant IA", response)
             self.conversation_history.append({"role": "assistant", "content": response})
             self.save_to_file(str({"role": "assistant", "content": response}))
@@ -86,3 +98,18 @@ class AssistantWindow(QWidget):
     def save_to_file(self, message):
         with open(self.history_file, "a", encoding="utf-8") as f:
             f.write(message + "\n")
+
+    # Méthodes pour recueillir l'audio et le transcrire
+    def toggle_recording(self):
+        if not self.recorder.is_recording:
+            self.recorder.start_recording()
+            self.mic_button.setIcon(qta.icon("fa5s.stop"))
+        else:
+            self.recorder.stop_and_transcribe()
+            self.mic_button.setIcon(qta.icon("fa5s.microphone"))
+
+    def handle_transcription(self, text):
+        # Affiche la transcription dans le champ de saisie
+        self.prompt_input.setText(text)
+        # Envoie le message automatiquement
+        self.send_prompt()
