@@ -23,6 +23,13 @@ class Settings:
         "Tu ne dois surtout pas halluciner"
     )
 
-    # Autres attributs
+    # Paramètres graphiques.
+    window_title: str = "Ignis - Assistant IA local"
+
+    # Paramètres pour la synthèse vocale.
+    synthetic_rate: int = 180
+    synthetic_volume: float = 1.0
+
+    # Autres attributs.
     debug: bool = False
     history_file: str = "Chat_history.txt"

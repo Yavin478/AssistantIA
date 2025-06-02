@@ -60,3 +60,17 @@ class AudioRecorder:
         os.remove(temp_path)
 
         return "".join([s.text for s in segments]).strip()
+
+# Classe permettant de retranscrire le texte obtenu en audio.
+class AudioSynthesizer:
+    def __init__(self):
+        self.engine = pyttsx3.init()
+        self.engine.setProperty("rate", Settings.synthetic_rate)
+        self.engine.setProperty("volume", Settings.synthetic_volume)
+
+    # Méthode pour le text-to-speech.
+    def speak(self, text: str):
+        if not text.strip():
+            return
+        self.engine.say(text)
+        self.engine.runAndWait()

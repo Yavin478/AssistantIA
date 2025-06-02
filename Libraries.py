@@ -11,7 +11,7 @@ from dataclasses import dataclass
 # Pour l'interface graphique.
 import sys
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QTextEdit, QPushButton, QScrollArea,QLabel, QHBoxLayout, QFrame, QComboBox)
+from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QTextEdit, QPushButton, QScrollArea,QLabel, QHBoxLayout, QFrame, QPushButton, QHBoxLayout, QComboBox,QCheckBox )
 
 # Pour l'intéraction vocale.
 import os
@@ -23,4 +23,4 @@ import tempfile
 import scipy.io.wavfile as wav
 from faster_whisper import WhisperModel
 import qtawesome as qta
-from PyQt5.QtWidgets import QPushButton, QHBoxLayout
+import pyttsx3

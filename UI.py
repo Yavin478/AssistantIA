@@ -8,7 +8,7 @@ from Vocal import *
 class AssistantWindow(QWidget):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("Assistant IA Local - avec Ollama")
+        self.setWindowTitle(Settings.window_title)
         self.setGeometry(200, 200, 800, 700)
 
         self.conversation_history = [
@@ -54,8 +54,16 @@ class AssistantWindow(QWidget):
 
         # Intéraction vocale.
         self.recorder = AudioRecorder(self.handle_transcription)
+        self.tts = AudioSynthesizer()
 
-        # Boutons (micro + envoyer).
+        # Bouton à cocher pour la réponse vocale de l'assistant.
+        self.voice_enabled = False  # Désactivé par défaut
+        self.voice_checkbox = QCheckBox("Activer la réponse vocale")
+        self.voice_checkbox.setChecked(False)
+        self.voice_checkbox.stateChanged.connect(self.toggle_voice)
+        main_layout.addWidget(self.voice_checkbox)
+
+        # Boutons pour le micro et l'envoi du message.
         button_layout = QHBoxLayout()
         self.mic_button = QPushButton()
         self.mic_button.setIcon(qta.icon("fa5s.microphone"))
@@ -90,6 +98,8 @@ class AssistantWindow(QWidget):
             self.append_message("🤖 Assistant IA", response)
             self.conversation_history.append({"role": "assistant", "content": response})
             self.save_to_file(str({"role": "assistant", "content": response}))
+            if self.voice_enabled : self.tts.speak(response)
+
         except Exception as e:
             self.append_message("Erreur", str(e))
             self.save_to_file("Erreur", str(e))
@@ -122,4 +132,9 @@ class AssistantWindow(QWidget):
     # Méthode pour mettre à jour dynamiquement le modèle utilisé.
     def update_model(self, model_name):
         Settings.model = model_name
+
+    # Méthode pour indiquer que la réponse vocale est activée.
+    def toggle_voice(self, state):
+        self.voice_enabled = state == 2  # 2 signifie "Checked" dans Qt
+
 

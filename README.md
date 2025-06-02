@@ -30,4 +30,4 @@ Ce projet propose un assistant personnel basé sur un **modèle de langage open 
 Voici la liste complète des bibliothèques Python requises :
 
 ```bash
-pip install pyqt5 qtawesome requests sounddevice scipy faster-whisper
+pip install pyqt5 qtawesome requests sounddevice scipy faster-whisper pyttsx3
