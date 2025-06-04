@@ -1,5 +1,5 @@
 ''' Auteur : Yavin 4u78 (avec chatGPT)
-Fichier contenant les fonctions d'appel pour l'API d'ollama.
+Fichier contenant les fonctions d'appel pour l'API d'Ollama.
 Il faut d'abord run Ollama dans le terminal Windows : ollama run mistral.
 '''
 
@@ -7,6 +7,8 @@ from Settings import *
 
 # Classe pour les intéractions avec l'API d'Ollama pour exécuter les LLM.
 class OllamaAPI():
+
+    # Méthode pour envoyer la requête de l'utilisateur au LLM selectionné via l'API Ollama
     def ask_ollama(prompt):
         url = Settings.api_url
         payload = {
