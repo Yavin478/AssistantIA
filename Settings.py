@@ -33,10 +33,13 @@ class Settings:
     synthetic_rate: int = 180
     synthetic_volume: float = 1.0
 
-    # Paramètres pour la transcription et le mode "mains libres"
-    handfree_keywordstart: str = "Alice"
+    # Paramètres pour la transcription audio
     silence_threshold = 0.01  # seuil RMS à ajuster
     silence_duration = 2.8 # durée du silence en secondes avant arrêt de l'enregistrement
+
+    # Paramètres pour le mode "mains libres"
+    handfree_keywordstart: str = "Alice"
+    buffer_duration: float = 2.0
 
     # Autres attributs.
     debug: bool = True
