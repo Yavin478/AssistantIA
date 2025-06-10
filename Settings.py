@@ -34,13 +34,13 @@ class Settings:
     synthetic_volume: float = 1.0
 
     # Paramètres pour la transcription audio
-    silence_threshold = 0.01  # seuil RMS à ajuster
-    silence_duration = 2.8 # durée du silence en secondes avant arrêt de l'enregistrement
+    silence_threshold: float = 0.01   # Seuil RMS à ajuster
+    silence_duration: float = 2.8  # Durée du silence en secondes avant arrêt de l'enregistrement
 
     # Paramètres pour le mode "mains libres"
     handfree_keywordstart: str = "Alice"
     buffer_duration: float = 2.0
 
-    # Autres attributs.
+    # Autres attributs
     debug: bool = True
     history_file: str = "Chat_history.txt"
