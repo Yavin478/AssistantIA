@@ -1,7 +1,6 @@
-''' Auteur : Yavin 4u78 (avec chatGPT)
+''' Auteur : Yavin 4u78 (avec l'aide de chatGPT et Le Chat)
 Fichier contenant la classe principale permettant l'affichage de l'interface graphique pour les intéractions avec l'utilisateur.
 '''
-import time
 
 from AudioHandsFreeListener import *
 
@@ -124,7 +123,6 @@ class AssistantWindow(QWidget):
 
     # Méthode permettant de traiter la réponse de l'API obtenue pour l'afficher dans l'UI et la dicter si l'option à été selectionné
     def handle_api_response(self, response):
-        if Settings.debug: print("Réponse de l'API obtenue avec succès !")
         self.ask_button.setEnabled(True)  # Réactivation du bouton d'envoi des requêtes textuelles dans le cas ou l'appel API est un succès
         self.mic_button.setEnabled(True)  # Réactivation du bouton du micro dans le cas ou l'appel API est un succès
 
@@ -141,12 +139,13 @@ class AssistantWindow(QWidget):
                 self.handsfree_listener.stop()
                 if Settings.debug: print("Mains libres temporairement désactivé pendant la synthèse vocale")
 
-            # Connexion du signal finished_speaking pour réactiver le mode "mains libres" et afficher des logs à la fin de la synthèse vocale
-            self.tts.finished_speaking.connect(lambda: print("Synthèse vocale terminée") if Settings.debug else None)
+            # Connexion du signal de fin global 'finished_speaking' aux différentes actions programmées
+            # Ce signal est trigger lorsque la synthèse est terminée, le programme le détecte et exécute les actions ci-dessous
+            self.tts.finished_speaking.connect(lambda: print("Synthèse vocale terminée") if Settings.debug else None)  # Affichage du log de fin de la synthèse en mode debug
             self.tts.finished_speaking.connect(lambda: (self.handsfree_listener.start(), print(
-                "Mode mains libres réactivée après la synthèse vocale")) if handsfree_was_active else None)
-            self.tts.finished_speaking.connect(lambda: self.handsfree_checkbox.setEnabled(True))
-            self.tts.speak(response)
+                "Mode mains libres réactivée après la synthèse vocale")) if handsfree_was_active and Settings.debug else None)  # Affichage du log pour la réactivation de mode 'mains libres' en mode debug
+            self.tts.finished_speaking.connect(lambda: self.handsfree_checkbox.setEnabled(True))  # Réactivation de la case à cocher du mode 'mains libres'
+            self.tts.speak(response)  # Synthèse vocale
 
         self.handsfree_checkbox.setEnabled(True)  # Réactivation de la case du mode "mains libres" dans le cas ou l'appel API est un succès
 
@@ -154,6 +153,7 @@ class AssistantWindow(QWidget):
     def append_message(self, sender, message):
         formatted = f"<b>{sender} :</b><br>{message}<br><hr>"
         self.history_display.append(formatted)
+        if Settings.debug: print("Affichage d'un message dans l'UI")
 
     # Méthode permettant de sauvegarder une interaction d'une conversation dans un fichier texte externe
     def save_to_file(self, message):
@@ -181,12 +181,12 @@ class AssistantWindow(QWidget):
     def update_model(self, model_name):
         Settings.model = model_name
 
-    # Méthode pour indiquer que la réponse vocale est activée.
+    # Méthode pour activer/désactiver la synthèse vocale
     def toggle_voice(self, state):
         self.tts.stop()  # Arrêt de la synthèse vocale en cours si il y en a une
         self.voice_enabled = state == 2  # 2 signifie "Checked" dans Qt
 
-    # Méthode pour activer ou désactiver le mode main libre : lancement de la boucle d'écoute en continue
+    # Méthode pour activer/désactiver le mode main libre : lancement de la boucle d'écoute en continue
     def toggle_handsfree_mode(self):
         if self.handsfree_checkbox.isChecked():
             self.tts.stop()  # Arrêt de la synthèse vocale en cours pour éviter tout conflit avec le mode "mains libres"
@@ -198,13 +198,14 @@ class AssistantWindow(QWidget):
             self.mic_button.setEnabled(True)  # Réactivation automatique du bouton du micro en sortant du mode "mains libres"
             if Settings.debug : print("Mode mains libres désactivé")
 
-    # Méthode pour commencer l'enregistrement audio en mode "mains libres" suite au repérage du mot-clé
+    # Méthode permettant de commenecr un enregistrement audio suite au repérage du mot-clé lors d'une écoute en continu du mode 'mains libres'
     def handle_handsfree_command(self, command_type):
-        if command_type == "start_recording":
+        if command_type == "start_recording":  # Vérifie qu'un enregistrement à bien été déclenché depuis le mode 'mains libres' grâce au str passé en paramètre
+
             if not hasattr(self.recorder, 'worker') or not self.recorder.worker or not self.recorder.worker.isRunning():
                 if Settings.debug: print("Début de l'enregistrement en mode mains libres")
                 self.tts.speak("J'écoute")
-                time.sleep(1)
-                self.recorder.start_recording()
+                time.sleep(1)  # Delay pour laisser le temps à la synthèse de se terminer avant l'enregistrement
+                self.recorder.start_recording()  # Appel de la méthode pour lancer un enregistrement avec 'Audiorecorder'
                 self.mic_button.setIcon(qta.icon("fa5s.stop"))
 

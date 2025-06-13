@@ -1,4 +1,4 @@
-''' Auteur : Yavin 4u78 (avec chatGPT)
+''' Auteur : Yavin 4u78 (avec l'aide de chatGPT et Le Chat)
 Fichier contenant la classe de base pour l'initialisation et l'utilisation du modèle Whisper pour toutes les intéractions vocales du programme.
 '''
 
@@ -8,8 +8,9 @@ from OllamaAPI import *
 class AudioBase:
     def __init__(self, model_size="base", device="auto", compute_type="int8"):
         self.samplerate = 16000
-        self.model = WhisperModel(model_size, device=device, compute_type=compute_type)
+        self.model = WhisperModel(model_size, device=device, compute_type=compute_type)  # Initialisation du modèle Whisper
 
+    # Méthode pour récupérer la transcription obtenue avec le modèle Whisper
     def transcribe_audio(self, audio, samplerate=None):
         if samplerate is None:
             samplerate = self.samplerate

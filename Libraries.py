@@ -1,4 +1,4 @@
-''' Auteur : Yavin 4u78 (avec chatGPT)
+''' Auteur : Yavin 4u78 (avec l'aide de chatGPT et Le Chat)
 Fichier pour les importations des librairies externes nécessaires au projet.
 '''
 

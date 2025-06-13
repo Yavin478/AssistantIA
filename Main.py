@@ -1,4 +1,4 @@
-''' Auteur : Yavin 4u78 (avec chatGPT)
+''' Auteur : Yavin 4u78 (avec l'aide de chatGPT et Le Chat)
 Fichier principale du programme.
 '''
 

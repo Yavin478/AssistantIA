@@ -1,4 +1,4 @@
-''' Auteur : Yavin 4u78 (avec chatGPT)
+''' Auteur : Yavin 4u78 (avec l'aide de chatGPT et Le Chat)
 Fichier de configuration des paramètres variables du projet.
 '''
 
@@ -7,9 +7,9 @@ from Libraries import *
 # Classe de données contenant les paramètres configurables du projet
 @dataclass
 class Settings:
-    # Attributs pour l'usage du LLM avec Ollama
+    # Attributs généraux du programme
 
-    # Liste des modèles disponibles, téléchargés au préalable avec Ollama
+    # Liste des modèles disponibles, téléchargés au préalable avec Ollama en CLI
     available_models = ["mistral:7b", "tinyllama:1.1b-chat-v1-q4_0"]
     # Modèle par défaut
     model: str = available_models[0]
@@ -27,20 +27,20 @@ class Settings:
     )
 
     # Paramètres graphiques
-    window_title: str = "Assistant IA local"
+    window_title: str = "Assistant IA local"  # Nom de la fenêtre d'affichage
 
     # Paramètres pour la synthèse vocale
-    synthetic_rate: int = 180
-    synthetic_volume: float = 1.0
+    synthetic_rate: int = 180  # Vitesse d'élocution pour la synthèse vocale
+    synthetic_volume: float = 1.0  # Volume de la synthèse vocale
 
     # Paramètres pour la transcription audio
     silence_threshold: float = 0.01   # Seuil RMS à ajuster
     silence_duration: float = 2.8  # Durée du silence en secondes avant arrêt de l'enregistrement
 
     # Paramètres pour le mode "mains libres"
-    handfree_keywordstart: str = "Alice"
-    buffer_duration: float = 2.0
+    handfree_keywordstart: str = "Alice"  # Mot-clé pour déclencher une transcription en mode 'mains libres'
+    buffer_duration: float = 2.0  # Durée des segments d'enregistrement vocal analysées pour la détection du mot-clé
 
     # Autres attributs
-    debug: bool = True
-    history_file: str = "Chat_history.txt"
+    debug: bool = True  # Booléen pour le mode debug afin d'afficher les logs du programme dans la console python
+    history_file: str = "Chat_history.txt"  # Nom du fichier d'enregistrement des conversations
