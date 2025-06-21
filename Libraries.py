@@ -9,6 +9,8 @@ import requests
 from dataclasses import dataclass
 import time
 import os
+import hashlib
+import json
 
 # Pour l'interface graphique
 import sys

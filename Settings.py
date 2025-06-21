@@ -10,7 +10,7 @@ class Settings:
     # Attributs généraux du programme
 
     # Liste des modèles disponibles, téléchargés au préalable avec Ollama en CLI
-    available_models = ["mistral:7b", "tinyllama:1.1b-chat-v1-q4_0"]
+    available_models = ["gemma3:4b", "mistral:7b", "tinyllama:1.1b-chat-v1-q4_0"]
     # Modèle par défaut
     model: str = available_models[0]
     # Url de l'API Ollama
@@ -44,6 +44,7 @@ class Settings:
     # Paramètres pour le RAG
     folder_path: str = "docs"  # Nom du repo appartenant au projet contenant les fichiers pour le RAG
     embed_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"  # Nom du modèle d'embeddings utiliser pour le RAG
+    index_path: str = "storage"  # Nom du repo contenant les fichiers json de vectorisation
 
     # Autres attributs
     debug: bool = True  # Booléen pour le mode debug afin d'afficher les logs du programme dans la console python

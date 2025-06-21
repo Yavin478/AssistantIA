@@ -73,6 +73,9 @@ class AssistantWindow(QWidget):
         self.handsfree_checkbox.stateChanged.connect(self.toggle_handsfree_mode)
         main_layout.addWidget(self.handsfree_checkbox)
 
+        # Initialisation de l'index vectoriel pour le rag
+        # self.index_builder = IndexBuilder()
+
         # Case à cocher pour activer/désactiver le RAG
         self.rag_enabled = False  # Booléen indiquant l'activation ou non du RAG
         self.rag_checkbox = QCheckBox("RAG")
@@ -113,15 +116,12 @@ class AssistantWindow(QWidget):
 
         if self.rag_enabled:
             if Settings.debug: print("Réponse avec RAG souhaitée")
-            index_builder = IndexBuilder()
-            query_engine = index_builder.get_query_engine()
+            index_builder = IndexBuilder(Settings.index_path)
+            query_engine = index_builder.get_query_engine()  # Initialise le moteur de requête basé sur la base vectorielle
             if Settings.debug: print("Query engine initialisé")
 
-            # Récupération du contexte documentaire
-            context_text = str(query_engine.query(prompt))
-            #if Settings.debug : print(f"Context : {context_text}")
-
-            prompt = f"Voici des documents utiles :\n{context_text}\n\nQuestion : {prompt}\nRéponds de manière claire."  # Prompt enrichit avec le RAG
+            # Récupération du contexte documentaire et enrichissement du prompt initial
+            prompt = str(query_engine.query(prompt))  # Effectue la recherche sémantique dans la base vectorielle et enrichit le prompt d'origine avec les informations de contexte adéquates
 
         # Stocker la requête dans l'historique de la conversation et dans le fichier de sauvegarde
         self.conversation_history.append({"role": "user", "content": prompt})
@@ -171,6 +171,7 @@ class AssistantWindow(QWidget):
 
     # Méthode permettant d'ajouter une intéraction sur l'interface graphique
     def append_message(self, sender, message):
+        message = message.strip().replace("\n", "<br>")  # Convertit les retours à la ligne
         formatted = f"<b>{sender} :</b><br>{message}<br><hr>"
         self.history_display.append(formatted)
         if Settings.debug: print("Affichage d'un message dans l'UI")

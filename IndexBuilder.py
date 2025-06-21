@@ -5,31 +5,68 @@ Fichier permettant d'indexer les fichiers personnels pour le RAG.
 from DocumentLoader import *
 
 class IndexBuilder:
-    def __init__(self):
-        self.index_path = "storage"
+    def __init__(self, index_path):
+        self.index_path = index_path
+        self.hash_path = os.path.join(self.index_path, "docs_hash.json")
         self.document_loader = DocumentLoader(Settings.folder_path)
 
-        LlamaIndexSettings.embed_model = HuggingFaceEmbedding(model_name=Settings.embed_model_name)  # Définit le modèle d'embedding pour la vectorisation et la récupération
+    LlamaIndexSettings.embed_model = HuggingFaceEmbedding(model_name=Settings.embed_model_name)  # Définit le modèle d'embedding pour la vectorisation et la récupération
+
+    def compute_docs_hash(self):
+        file_info = []
+        for root, _, files in os.walk(Settings.folder_path):
+            for file in sorted(files):
+                filepath = os.path.join(root, file)
+                stat = os.stat(filepath)
+                file_info.append({
+                    "name": file,
+                    "size": stat.st_size,
+                    "mtime": stat.st_mtime
+                })
+        if Settings.debug: print("Calcul du hash des documents courant effectué")
+        return hashlib.sha256(json.dumps(file_info).encode()).hexdigest()
+
+    def load_previous_hash(self):
+        if os.path.exists(self.hash_path):
+            with open(self.hash_path, "r") as f:
+                if Settings.debug: print("Chargement du hash des documents")
+                return json.load(f).get("hash")
+        return None
+
+    def save_current_hash(self, hash_value):
+        os.makedirs(self.index_path, exist_ok=True)
+        with open(self.hash_path, "w") as f:
+            json.dump({"hash": hash_value}, f)
+        if Settings.debug: print("Sauvegarde du hash des documents")
 
     def build_index(self):
-        documents = self.document_loader.load_documents()
-        if Settings.debug: print("Chargement des documents effectué")
-        index = VectorStoreIndex.from_documents(documents)
-        if Settings.debug: print("Vector store créé")
-        index.storage_context.persist(persist_dir=self.index_path)
-        if Settings.debug: print("Vector store enregistré")
-        return index
+        try:
+            documents = self.document_loader.load_documents()
+            if Settings.debug: print("Chargement des documents effectué")
+            index = VectorStoreIndex.from_documents(documents)
+            if Settings.debug: print("Vector store créé")
+            index.storage_context.persist(persist_dir=self.index_path)
+            if Settings.debug: print("Vector store enregistré")
+            return index
+        except Exception as e:
+            print(f"Exception levée au niveau de la construction de l'index : {e}")
 
     def load_or_build_index(self):
-        if os.path.exists(self.index_path):
-            if Settings.debug : print("Chargement de l'index")
+        current_hash = self.compute_docs_hash()
+        previous_hash = self.load_previous_hash()
+
+        if current_hash != previous_hash:
+            if Settings.debug: print("Changement détecté dans les documents : reconstruction de l’index.")
+            index = self.build_index()
+            self.save_current_hash(current_hash)
+            return index
+        else:
+            if Settings.debug: print("Aucun changement détecté : chargement de l’index existant.")
             storage_context = StorageContext.from_defaults(persist_dir=self.index_path)
             if Settings.debug: print("Enregistrement du contexte")
             return load_index_from_storage(storage_context)
-        else:
-            return self.build_index()
 
     def get_query_engine(self):
         index_loaded = self.load_or_build_index()
-        if Settings.debug: print("Création de l'index effectuée avec succès")
+        if Settings.debug: print("Moteur de requête initialisé")
         return index_loaded.as_query_engine(llm=MockLLM())
