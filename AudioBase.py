@@ -2,7 +2,7 @@
 Fichier contenant la classe de base pour l'initialisation et l'utilisation du modèle Whisper pour toutes les intéractions vocales du programme.
 '''
 
-from OllamaAPI import *
+from Settings import *
 
 # Classe de base commune pour l'utilisation des fonctionnalités vocales du modele Whisper
 class AudioBase:

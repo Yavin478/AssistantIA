@@ -9,3 +9,10 @@ if __name__=='__main__':
     window = AssistantWindow()
     window.show()
     sys.exit(app.exec_())
+
+    # try:
+    #     prompt_user = "Quelles sont les commandes pour installer chromium ? "
+    #     print(ask_ollama_with_rag(prompt_user))
+    #     print("Ok")
+    # except Exception as e:
+    #     print(e)

@@ -8,6 +8,7 @@ import requests
 # Pour le projet en général
 from dataclasses import dataclass
 import time
+import os
 
 # Pour l'interface graphique
 import sys
@@ -15,7 +16,6 @@ from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
 from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QTextEdit, QPushButton, QScrollArea,QLabel, QHBoxLayout, QFrame, QPushButton, QHBoxLayout, QComboBox,QCheckBox )
 
 # Pour les intéractions vocales
-import os
 import threading
 import sounddevice as sd
 import uuid
@@ -26,3 +26,10 @@ from faster_whisper import WhisperModel
 import qtawesome as qta
 import pyttsx3
 import queue
+
+# Pour le RAG
+from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, StorageContext, load_index_from_storage
+from llama_index.core.query_engine import RetrieverQueryEngine
+from llama_index.embeddings.huggingface import HuggingFaceEmbedding
+from llama_index.core import Settings as LlamaIndexSettings
+from llama_index.core.llms import MockLLM

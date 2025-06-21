@@ -2,7 +2,7 @@
 Fichier contenant la classe principale permettant l'affichage de l'interface graphique pour les intéractions avec l'utilisateur.
 '''
 
-from AudioHandsFreeListener import *
+from OllamaAPI import *
 
 # Classe pour l'affichage de l'interface graphique avec les boutons associés aux diverses fonctionnalités implémentées du projet
 class AssistantWindow(QWidget):
@@ -73,6 +73,13 @@ class AssistantWindow(QWidget):
         self.handsfree_checkbox.stateChanged.connect(self.toggle_handsfree_mode)
         main_layout.addWidget(self.handsfree_checkbox)
 
+        # Case à cocher pour activer/désactiver le RAG
+        self.rag_enabled = False  # Booléen indiquant l'activation ou non du RAG
+        self.rag_checkbox = QCheckBox("RAG")
+        self.rag_checkbox.setChecked(False)
+        self.rag_checkbox.stateChanged.connect(self.toggle_rag)
+        main_layout.addWidget(self.rag_checkbox)
+
         # Boutons pour le micro et l'envoi du message
         button_layout = QHBoxLayout()
         self.mic_button = QPushButton()
@@ -88,6 +95,7 @@ class AssistantWindow(QWidget):
         button_layout.addWidget(self.ask_button)
         main_layout.addLayout(button_layout)
 
+
     # Méthode permettant d'envoyer le dernier prompt utilisateur envoyé dans l'UI à l'API Ollama,
     # d'afficher la réponse obtenue sur l'UI puis de la faire réciter par synthèse vocale si l'option est activée
     def send_prompt(self):
@@ -102,6 +110,18 @@ class AssistantWindow(QWidget):
 
         self.append_message("🧑 Utilisateur", prompt)
         self.prompt_input.clear()
+
+        if self.rag_enabled:
+            if Settings.debug: print("Réponse avec RAG souhaitée")
+            index_builder = IndexBuilder()
+            query_engine = index_builder.get_query_engine()
+            if Settings.debug: print("Query engine initialisé")
+
+            # Récupération du contexte documentaire
+            context_text = str(query_engine.query(prompt))
+            #if Settings.debug : print(f"Context : {context_text}")
+
+            prompt = f"Voici des documents utiles :\n{context_text}\n\nQuestion : {prompt}\nRéponds de manière claire."  # Prompt enrichit avec le RAG
 
         # Stocker la requête dans l'historique de la conversation et dans le fichier de sauvegarde
         self.conversation_history.append({"role": "user", "content": prompt})
@@ -208,4 +228,8 @@ class AssistantWindow(QWidget):
                 time.sleep(1)  # Delay pour laisser le temps à la synthèse de se terminer avant l'enregistrement
                 self.recorder.start_recording()  # Appel de la méthode pour lancer un enregistrement avec 'Audiorecorder'
                 self.mic_button.setIcon(qta.icon("fa5s.stop"))
+
+    # Méthode pour activer/désactiver le RAG
+    def toggle_rag(self, state):
+        self.rag_enabled = state == 2  # 2 signifie "Checked" dans Qt
 

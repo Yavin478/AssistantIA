@@ -41,6 +41,10 @@ class Settings:
     handfree_keywordstart: str = "Alice"  # Mot-clé pour déclencher une transcription en mode 'mains libres'
     buffer_duration: float = 2.0  # Durée des segments d'enregistrement vocal analysées pour la détection du mot-clé
 
+    # Paramètres pour le RAG
+    folder_path: str = "docs"  # Nom du repo appartenant au projet contenant les fichiers pour le RAG
+    embed_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"  # Nom du modèle d'embeddings utiliser pour le RAG
+
     # Autres attributs
     debug: bool = True  # Booléen pour le mode debug afin d'afficher les logs du programme dans la console python
     history_file: str = "Chat_history.txt"  # Nom du fichier d'enregistrement des conversations
