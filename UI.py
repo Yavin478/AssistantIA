@@ -121,7 +121,8 @@ class AssistantWindow(QWidget):
             if Settings.debug: print("Query engine initialisé")
 
             # Récupération du contexte documentaire et enrichissement du prompt initial
-            prompt = str(query_engine.query(prompt))  # Effectue la recherche sémantique dans la base vectorielle et enrichit le prompt d'origine avec les informations de contexte adéquates
+            context = query_engine.query(prompt)  #  Effectue la recherche sémantique dans la base vectorielle en fonction du prompt de l'utilisateur
+            prompt = f"Précise les sources dans tes réponses:\n{str(context)}"  # Nouveau prompt enrichit par RAG
 
         # Stocker la requête dans l'historique de la conversation et dans le fichier de sauvegarde
         self.conversation_history.append({"role": "user", "content": prompt})
@@ -171,10 +172,34 @@ class AssistantWindow(QWidget):
 
     # Méthode permettant d'ajouter une intéraction sur l'interface graphique
     def append_message(self, sender, message):
-        message = message.strip().replace("\n", "<br>")  # Convertit les retours à la ligne
-        formatted = f"<b>{sender} :</b><br>{message}<br><hr>"
-        self.history_display.append(formatted)
-        if Settings.debug: print("Affichage d'un message dans l'UI")
+        try :
+            message = message.strip()
+
+            # Blocs de code ```...``` (multilignes)
+            message = re.sub(
+                r"```(.*?)```",
+                r"<pre style='background-color:#f4f4f4; border:1px solid #ccc; padding:6px; font-family:monospace;'>\1</pre>",
+                message,
+                flags=re.DOTALL
+            )
+
+            # Code en ligne `...`
+            message = re.sub(
+                r"`([^`\n]+)`",
+                r"<code style='background-color:#e8e8e8; font-family:monospace;'>\1</code>",
+                message
+            )
+
+            message = message.replace("\n", "<br>")  # Convertit les sauts de ligne
+            message = re.sub(r"\*\*(.*?)\*\*", r"<b>\1</b>", message)  # Convertit les mots en **gras**
+            message = re.sub(r"\*(.*?)\*", r"<i>\1</i>", message)  # Convertit les mots en *italique*
+
+            formatted = f"<b>{sender} :</b><br>{message}<br><hr>"
+            self.history_display.append(formatted)
+            if Settings.debug: print("Affichage d'un message dans l'UI")
+
+        except Exception as e:
+            print(f"Exception levée au niveau de l'affichage d'un message dans l'UI : \n{e}")
 
     # Méthode permettant de sauvegarder une interaction d'une conversation dans un fichier texte externe
     def save_to_file(self, message):

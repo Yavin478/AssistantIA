@@ -10,5 +10,8 @@ class DocumentLoader:
 
     # Méthode pour charger les fichiers locaux présents dans le repo prévu pour le RAG
     def load_documents(self):
-        documents = SimpleDirectoryReader(self.folder_path).load_data()
+        documents = SimpleDirectoryReader(
+            self.folder_path,
+            file_metadata=lambda filename: {"source": os.path.basename(filename)}
+        ).load_data()
         return documents

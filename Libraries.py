@@ -11,6 +11,7 @@ import time
 import os
 import hashlib
 import json
+import re
 
 # Pour l'interface graphique
 import sys
