@@ -5,10 +5,10 @@ Fichier permettant d'indexer les fichiers personnels pour le RAG.
 from DocumentLoader import *
 
 class IndexBuilder:
-    def __init__(self, index_path):
+    def __init__(self, index_path, document_loader):
         self.index_path = index_path
         self.hash_path = os.path.join(self.index_path, "docs_hash.json")
-        self.document_loader = DocumentLoader(Settings.folder_path)
+        self.document_loader = document_loader
 
     LlamaIndexSettings.embed_model = HuggingFaceEmbedding(model_name=Settings.embed_model_name)  # Définit le modèle d'embedding pour la vectorisation et la récupération
 

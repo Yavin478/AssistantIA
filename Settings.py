@@ -45,6 +45,7 @@ class Settings:
     folder_path: str = "docs"  # Nom du repo appartenant au projet contenant les fichiers pour le RAG
     embed_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"  # Nom du modèle d'embeddings utiliser pour le RAG
     index_path: str = "storage"  # Nom du repo contenant les fichiers json de vectorisation
+    allowed_extensions = ['.pdf', '.docx', '.doc', '.txt']  # Liste regroupant les types de fichier autorisés en tant que pièce jointe
 
     # Autres attributs
     debug: bool = True  # Booléen pour le mode debug afin d'afficher les logs du programme dans la console python

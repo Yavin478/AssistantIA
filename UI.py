@@ -73,8 +73,8 @@ class AssistantWindow(QWidget):
         self.handsfree_checkbox.stateChanged.connect(self.toggle_handsfree_mode)
         main_layout.addWidget(self.handsfree_checkbox)
 
-        # Initialisation de l'index vectoriel pour le rag
-        # self.index_builder = IndexBuilder()
+        # Initialisation de l'objet permettant de charger les documents personnels pour le RAG
+        self.document_loader = DocumentLoader(Settings.folder_path)
 
         # Case à cocher pour activer/désactiver le RAG
         self.rag_enabled = False  # Booléen indiquant l'activation ou non du RAG
@@ -83,18 +83,26 @@ class AssistantWindow(QWidget):
         self.rag_checkbox.stateChanged.connect(self.toggle_rag)
         main_layout.addWidget(self.rag_checkbox)
 
-        # Boutons pour le micro et l'envoi du message
+        # Footer de l'UI
         button_layout = QHBoxLayout()
+
+        # Bouton pour le micro
         self.mic_button = QPushButton()
         self.mic_button.setIcon(qta.icon("fa5s.microphone"))
         self.mic_button.setFixedSize(40, 40)
         self.mic_button.clicked.connect(self.toggle_recording)
 
+        # Bouton pour l'envoi du message
         self.ask_button = QPushButton("Envoyer")
         self.ask_button.clicked.connect(self.send_prompt)
 
+        # Bouton pour importer des documents
+        self.import_button = QPushButton("Importer des documents")
+        self.import_button.clicked.connect(self.import_documents)
+
         button_layout.addWidget(self.mic_button)
         button_layout.addStretch()
+        button_layout.addWidget(self.import_button)
         button_layout.addWidget(self.ask_button)
         main_layout.addLayout(button_layout)
 
@@ -105,6 +113,8 @@ class AssistantWindow(QWidget):
         self.ask_button.setEnabled(False) # Désactivation temporaire du bouton pour envoyer les requêtes textuelles pendant l'envoi d'un prompt à l'API Ollama
         self.mic_button.setEnabled(False)  # Désactivation temporaire du bouton du micro pendant l'envoi d'un prompt à l'API Ollama
         self.handsfree_checkbox.setEnabled(False) # Désactivation de la case pour le mode "mains libres" pendant l'envoi d'un prompt à l'API Ollama
+        self.rag_checkbox.setEnabled(False)  # Désactivation de la case pour activer ou non le RAG pendant l'envoi d'un prompt à l'API Ollama
+        self.import_button.setEnabled(False)  # Désactivation du bouton pour importer des fichiers pendant l'envoi d'un prompt à l'API Ollama
         self.tts.stop()  # Arrêt de la synthèse vocale en cours avant d'envoyer une nouvelle requête
 
         prompt = self.prompt_input.toPlainText().strip()  # Récupération de la requête textuelle écrite dans l'UI
@@ -116,7 +126,7 @@ class AssistantWindow(QWidget):
 
         if self.rag_enabled:
             if Settings.debug: print("Réponse avec RAG souhaitée")
-            index_builder = IndexBuilder(Settings.index_path)
+            index_builder = IndexBuilder(Settings.index_path, self.document_loader)
             query_engine = index_builder.get_query_engine()  # Initialise le moteur de requête basé sur la base vectorielle
             if Settings.debug: print("Query engine initialisé")
 
@@ -141,11 +151,15 @@ class AssistantWindow(QWidget):
             self.ask_button.setEnabled(True)  # Réactivation du bouton d'envoi des requêtes textuelles dans le cas ou l'appel API a échoué
             self.mic_button.setEnabled(True)  # Réactivation du bouton du micro dans le cas ou l'appel API a échoué
             self.handsfree_checkbox.setEnabled(True)  # Réactivation de la case du mode "mains libres" dans le cas ou l'appel API a échoué
+            self.rag_checkbox.setEnabled(True)  # Réactivation de la case pour activer ou non le RAG dans le cas ou l'appel API a échoué
+            self.import_button.setEnabled(True)  # Réactivation du bouton pour importer des fichiers dans le cas ou l'appel API a échoué
 
     # Méthode permettant de traiter la réponse de l'API obtenue pour l'afficher dans l'UI et la dicter si l'option à été selectionné
     def handle_api_response(self, response):
-        self.ask_button.setEnabled(True)  # Réactivation du bouton d'envoi des requêtes textuelles dans le cas ou l'appel API est un succès
-        self.mic_button.setEnabled(True)  # Réactivation du bouton du micro dans le cas ou l'appel API est un succès
+        self.ask_button.setEnabled(True)  # Réactivation du bouton d'envoi des requêtes textuelles dans le cas où l'appel API est un succès
+        self.mic_button.setEnabled(True)  # Réactivation du bouton du micro dans le cas où l'appel API est un succès
+        self.rag_checkbox.setEnabled(True)  # Réactivation de la case pour activer ou non le RAG dans le cas où l'appel API est un succès
+        self.import_button.setEnabled(True)  # Réactivation du bouton pour importer des fichiers dans le cas où l'appel API est un succès
 
         self.append_message("🤖 Assistant IA", response)
         self.conversation_history.append({"role": "assistant", "content": response})
@@ -258,4 +272,26 @@ class AssistantWindow(QWidget):
     # Méthode pour activer/désactiver le RAG
     def toggle_rag(self, state):
         self.rag_enabled = state == 2  # 2 signifie "Checked" dans Qt
+
+    # Méthode pour importer des documents depuis l'interface
+    def import_documents(self):
+        files, _ = QFileDialog.getOpenFileNames(self, "Sélectionner des fichiers", "","Documents (*.pdf *.doc *.docx *.txt)")
+
+        if not files:
+            return  # L'utilisateur a annulé
+
+        for file_path in files:
+            ext = os.path.splitext(file_path)[1].lower()
+            if ext not in Settings.allowed_extensions:
+                QMessageBox.warning(self, "Type non supporté",f"Le fichier {os.path.basename(file_path)} n'est pas un format accepté.")
+                continue
+
+            try:
+                dest_folder = Settings.folder_path  # Chemin du dossier "docs/"
+                os.makedirs(dest_folder, exist_ok=True)
+                shutil.copy(file_path, dest_folder)
+            except Exception as e:
+                QMessageBox.critical(self, "Erreur", f"Impossible de copier {file_path}.\n{str(e)}")
+
+        QMessageBox.information(self, "Import terminé", "Les documents ont été importés avec succès !")
 

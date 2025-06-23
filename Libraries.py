@@ -12,11 +12,12 @@ import os
 import hashlib
 import json
 import re
+import shutil
 
 # Pour l'interface graphique
 import sys
 from PyQt5.QtCore import Qt, QObject, QThread, pyqtSignal
-from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QTextEdit, QPushButton, QScrollArea,QLabel, QHBoxLayout, QFrame, QPushButton, QHBoxLayout, QComboBox,QCheckBox )
+from PyQt5.QtWidgets import (QApplication, QWidget, QVBoxLayout, QTextEdit, QPushButton, QScrollArea,QLabel, QHBoxLayout, QFrame, QPushButton, QHBoxLayout, QComboBox, QCheckBox, QFileDialog, QMessageBox )
 
 # Pour les intéractions vocales
 import threading
