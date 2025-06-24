@@ -76,6 +76,9 @@ class AssistantWindow(QWidget):
         # Initialisation de l'objet permettant de charger les documents personnels pour le RAG
         self.document_loader = DocumentLoader(Settings.folder_path)
 
+        # Initialisationde l'objet permettant de construire l'index vectoriel pour le RAG
+        self.index_builder = IndexBuilder(Settings.index_path, self.document_loader, Settings.embed_model_name)
+
         # Case à cocher pour activer/désactiver le RAG
         self.rag_enabled = False  # Booléen indiquant l'activation ou non du RAG
         self.rag_checkbox = QCheckBox("RAG")
@@ -126,8 +129,7 @@ class AssistantWindow(QWidget):
 
         if self.rag_enabled:
             if Settings.debug: print("Réponse avec RAG souhaitée")
-            index_builder = IndexBuilder(Settings.index_path, self.document_loader)
-            query_engine = index_builder.get_query_engine()  # Initialise le moteur de requête basé sur la base vectorielle
+            query_engine = self.index_builder.get_query_engine()  # Initialise le moteur de requête basé sur la base vectorielle
             if Settings.debug: print("Query engine initialisé")
 
             # Récupération du contexte documentaire et enrichissement du prompt initial
@@ -143,11 +145,15 @@ class AssistantWindow(QWidget):
         try:
             self.api_worker = OllamaAPIWorker(self.conversation_history)
             self.api_worker.api_response.connect(self.handle_api_response)
+            self.api_worker.api_error.connect(self.handle_api_error)
             self.api_worker.start()
 
         except Exception as e:
             self.append_message("Erreur", str(e))
-            self.save_to_file("Erreur", str(e))
+            print(f"Exception levée lors de l'initialisation de OllamaAPIWorker : \n{e}")
+            self.save_to_file(f"Erreur + {str(e)}")
+            QMessageBox.critical(self, "Erreur", "Erreur lors de l'initialisation du thread API.")
+
             self.ask_button.setEnabled(True)  # Réactivation du bouton d'envoi des requêtes textuelles dans le cas ou l'appel API a échoué
             self.mic_button.setEnabled(True)  # Réactivation du bouton du micro dans le cas ou l'appel API a échoué
             self.handsfree_checkbox.setEnabled(True)  # Réactivation de la case du mode "mains libres" dans le cas ou l'appel API a échoué
@@ -183,6 +189,18 @@ class AssistantWindow(QWidget):
             self.tts.speak(response)  # Synthèse vocale
 
         self.handsfree_checkbox.setEnabled(True)  # Réactivation de la case du mode "mains libres" dans le cas ou l'appel API est un succès
+
+    # Méthode permettant de traiter une erreur survenue lors d'un appel API
+    def handle_api_error(self, error_message):
+        self.ask_button.setEnabled(True)
+        self.mic_button.setEnabled(True)
+        self.handsfree_checkbox.setEnabled(True)
+        self.rag_checkbox.setEnabled(True)
+        self.import_button.setEnabled(True)
+
+        QMessageBox.critical(self, "Erreur API",f"Une erreur est survenue lors de l'appel à l'API Ollama")
+        self.append_message("Erreur", error_message)
+        self.save_to_file(f"Erreur API: {error_message}")
 
     # Méthode permettant d'ajouter une intéraction sur l'interface graphique
     def append_message(self, sender, message):
@@ -292,6 +310,10 @@ class AssistantWindow(QWidget):
                 shutil.copy(file_path, dest_folder)
             except Exception as e:
                 QMessageBox.critical(self, "Erreur", f"Impossible de copier {file_path}.\n{str(e)}")
+
+        # Reconstruction de l'index après l'import
+        self.index_builder.load_or_build_index()
+        if Settings.debug : print("Index reconstruit après import")
 
         QMessageBox.information(self, "Import terminé", "Les documents ont été importés avec succès !")
 
