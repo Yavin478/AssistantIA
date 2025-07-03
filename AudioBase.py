@@ -7,7 +7,7 @@ from Settings import *
 # Classe de base commune pour l'utilisation des fonctionnalités vocales du modele Whisper
 class AudioBase:
     def __init__(self, model_size="base", device="auto", compute_type="int8"):
-        self.samplerate = 16000
+        self.samplerate = Settings.samplerate
         self.model = WhisperModel(model_size, device=device, compute_type=compute_type)  # Initialisation du modèle Whisper
 
     # Méthode pour récupérer la transcription obtenue avec le modèle Whisper

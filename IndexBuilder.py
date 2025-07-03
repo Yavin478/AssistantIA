@@ -84,7 +84,7 @@ class IndexBuilder:
             if Settings.debug: print("Création ou chargement de l'index effectué avec succès")
             return index.as_query_engine(llm=MockLLM(),
                 response_mode="compact",  # ou "tree_summarize" pour résumer plusieurs docs
-                similarity_top_k=5,  # nombre de documents les plus similaires
+                similarity_top_k=4,  # nombre de documents les plus similaires
                 include_source=True   # ⬅️ Ceci permet d’inclure les métadonnées des sources dans la réponse)
                 )
         except Exception as e:

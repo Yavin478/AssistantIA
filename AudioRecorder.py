@@ -30,7 +30,7 @@ class AudioRecorderWorker(QThread, AudioBase):
 
         def audio_callback(indata, frames, time, status):
             if status:
-                print("Status du micro :", status)
+                if Settings.debug: print("Status du micro :", status)
             self.q.put(indata.copy())
 
         with sd.InputStream(samplerate=self.samplerate, channels=1, callback=audio_callback):

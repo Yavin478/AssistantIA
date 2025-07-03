@@ -34,12 +34,13 @@ class Settings:
     synthetic_volume: float = 1.0  # Volume de la synthèse vocale
 
     # Paramètres pour la transcription audio
+    samplerate: int = 16000  # Sample rate
     silence_threshold: float = 0.01   # Seuil RMS à ajuster
     silence_duration: float = 2.8  # Durée du silence en secondes avant arrêt de l'enregistrement
 
     # Paramètres pour le mode "mains libres"
-    handfree_keywordstart: str = "Alice"  # Mot-clé pour déclencher une transcription en mode 'mains libres'
-    buffer_duration: float = 2.0  # Durée des segments d'enregistrement vocal analysées pour la détection du mot-clé
+    handfree_keywordstartList = ["Alice", "Alisse", "Alis", "Assistante"]  # Mots-clés pour déclencher une transcription en mode 'mains libres'
+    buffer_duration: float = 1.8  # Durée des segments d'enregistrement vocal analysées pour la détection du mot-clé
 
     # Paramètres pour le RAG
     folder_path: str = "docs"  # Nom du repo appartenant au projet contenant les fichiers pour le RAG

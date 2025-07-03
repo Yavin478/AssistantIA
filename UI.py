@@ -238,6 +238,10 @@ class AssistantWindow(QWidget):
         with open(self.history_file, "a", encoding="utf-8") as f:
             f.write(message + "\n")
 
+    # Méthode pour mettre à jour dynamiquement le modèle utilisé
+    def update_model(self, model_name):
+        Settings.model = model_name
+
     # Méthode pour enclencher ou non l'enregistrement vocal
     def toggle_recording(self):
         self.tts.stop()  # Arrêt de la synthèse vocale en cours avant d'envoyer une nouvelle requête
@@ -255,10 +259,6 @@ class AssistantWindow(QWidget):
         self.prompt_input.setText(text)
         self.send_prompt()
 
-    # Méthode pour mettre à jour dynamiquement le modèle utilisé
-    def update_model(self, model_name):
-        Settings.model = model_name
-
     # Méthode pour activer/désactiver la synthèse vocale
     def toggle_voice(self, state):
         self.tts.stop()  # Arrêt de la synthèse vocale en cours si il y en a une
@@ -266,15 +266,18 @@ class AssistantWindow(QWidget):
 
     # Méthode pour activer/désactiver le mode main libre : lancement de la boucle d'écoute en continue
     def toggle_handsfree_mode(self):
-        if self.handsfree_checkbox.isChecked():
-            self.tts.stop()  # Arrêt de la synthèse vocale en cours pour éviter tout conflit avec le mode "mains libres"
-            self.handsfree_listener.start()
-            self.mic_button.setEnabled(False)  # Désactivation automatique du bouton du micro en entrant en mode "mains libres"
-            if Settings.debug : print("Mode mains libres activé")
-        else:
-            self.handsfree_listener.stop()
-            self.mic_button.setEnabled(True)  # Réactivation automatique du bouton du micro en sortant du mode "mains libres"
-            if Settings.debug : print("Mode mains libres désactivé")
+        try:
+            if self.handsfree_checkbox.isChecked():
+                self.tts.stop()  # Arrêt de la synthèse vocale en cours pour éviter tout conflit avec le mode "mains libres"
+                self.handsfree_listener.start()
+                self.mic_button.setEnabled(False)  # Désactivation automatique du bouton du micro en entrant en mode "mains libres"
+                if Settings.debug : print("Mode mains libres activé")
+            else:
+                self.handsfree_listener.stop()
+                self.mic_button.setEnabled(True)  # Réactivation automatique du bouton du micro en sortant du mode "mains libres"
+                if Settings.debug : print("Mode mains libres désactivé")
+        except Exception as e:
+            print(f"Exception levée lors de l'usage du mode mains libre: \n{e}")
 
     # Méthode permettant de commenecr un enregistrement audio suite au repérage du mot-clé lors d'une écoute en continu du mode 'mains libres'
     def handle_handsfree_command(self, command_type):

@@ -13,30 +13,34 @@ from AudioSynthesizer import *
 class AudioHandsFreeListenerWorker(QThread, AudioBase):
     command_detected = pyqtSignal(str)  # Signal indiquant la détection du mot-clé lors de l'écoute en continu du mode 'mains libres'
 
-    def __init__(self, samplerate, buffer_duration, handfree_keywordstart):
+    def __init__(self, samplerate, buffer_duration, handfree_keywordstartList):
         AudioBase.__init__(self)  # Initialise la partie AudioBase
         QThread.__init__(self)  # Initialise la partie QThread
         self.samplerate = samplerate
         self.buffer_duration = buffer_duration
-        self.handfree_keywordstart = handfree_keywordstart  # Récupération du mot-clé
+        self.handfree_keywordstartList = handfree_keywordstartList  # Récupération du mot-clé
         self.active = False  # Etat du thread d'écoute en continu
 
     def run(self):
-        self.active = True
+        try:
+            self.active = True
 
-        while self.active:  # Vérifie si le thread d'écoute en cours dois toujours se poursuivre
-            audio = self.capture_audio(self.buffer_duration)
-            sd.wait()
-            text = self.transcribe_audio(audio)  # Appel de la méthode de la classe mère 'AudioBase' pour transcrire en texte le contenu du dernier segment d'écoute
-            if not text:
-                continue
+            while self.active:  # Vérifie si le thread d'écoute en cours dois toujours se poursuivre
+                audio = self.capture_audio(self.buffer_duration)
+                sd.wait()
+                text = self.transcribe_audio(audio)  # Appel de la méthode de la classe mère 'AudioBase' pour transcrire en texte le contenu du dernier segment d'écoute
+                if Settings.debug: print("Echantillon d'écoute transcrit")
 
-            else :
-                if Settings.debug: print(f"Texte interprété : {text}")
+                if not text:
+                    continue
 
-                if self.handfree_keywordstart.lower() in text.lower():  # Vérification de la présence du mot-clé dans le texte transcrit
-                    self.command_detected.emit("start_recording")  # Emission du signal indiquant la détection du mot-clé et la validation du lancement d'un enregistrement
-                    if Settings.debug: print("Mot-clé détecté !")
+                else:
+                    if any(kw.lower() in text.lower() for kw in self.handfree_keywordstartList):  # Vérification de la présence d'un des mots-clés dans le texte transcrit
+                        self.command_detected.emit("start_recording")  # Emission du signal indiquant la détection du mot-clé et la validation du lancement d'un enregistrement
+                        if Settings.debug: print("Mot-clé détecté !")
+
+        except Exception as e:
+            print(f"Exception levée lors de l'écoute prolongée du mode mains libres: \n{e}")
 
     # Méthode permettant de capturer le contenu audio par segment de durée définie
     def capture_audio(self, duration):
@@ -58,7 +62,7 @@ class AudioHandsFreeListener(AudioBase):
     # Méthode permettant de lancer une écoute en continu
     def start(self):
         if self.worker is None or not self.worker.isRunning():
-            self.worker = AudioHandsFreeListenerWorker(self.samplerate, Settings.buffer_duration, Settings.handfree_keywordstart)  # Initialisation du worker pour l'écoute en continu
+            self.worker = AudioHandsFreeListenerWorker(self.samplerate, Settings.buffer_duration, Settings.handfree_keywordstartList)  # Initialisation du worker pour l'écoute en continu
             self.worker.command_detected.connect(self.on_command_detected)  # Connection du signal de reconnaissance du mot-clé émis par le worker à la méthode permettant de traiter la suite de processus
                                                                             # Lorsque ce signal est émis cela trigger cette méthode en lui passant comme argument le str validant le lancement d'un enregistrement
             self.worker.start()
